@@ -1,0 +1,10 @@
+winzou_state_machine:
+    sylius_order:
+        callbacks:
+            after:
+                sylius_request_payment:
+                    disabled: true
+                sylius_create_payment:
+                    disabled: true
+                sylius_hold_inventory:
+                    disabled: true

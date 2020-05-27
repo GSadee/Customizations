@@ -1,0 +1,29 @@
+winzou_state_machine:
+    sylius_order_checkout:
+        states:
+            payment_in_progress: ~
+        transitions:
+            pay:
+                from: [payment_selected, payment_skipped, payment_in_progress]
+                to: payment_in_progress
+            complete:
+                from: [payment_in_progress]
+                to: completed
+        callbacks:
+            after:
+                sylius_assign_token:
+                    on: ["pay"]
+                    do: ["@sylius.unique_id_based_order_token_assigner", "assignTokenValueIfNotSet"]
+                    args: ["object"]
+                sylius_request_payment:
+                    on: ["pay"]
+                    do: ["@sm.callback.cascade_transition", "apply"]
+                    args: ["object", "event", "'request_payment'", "'sylius_order_payment'"]
+                sylius_create_payment:
+                    on: ["pay"]
+                    do: ["@sm.callback.cascade_transition", "apply"]
+                    args: ["object.getPayments()", "event", "'create'", "'sylius_payment'"]
+                sylius_hold_inventory:
+                    on: ["pay"]
+                    do: ["@sylius.inventory.order_inventory_operator", "hold"]
+                    args: ["object"]
